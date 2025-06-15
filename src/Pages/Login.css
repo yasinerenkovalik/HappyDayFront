@@ -1,0 +1,25 @@
+.secim-container {
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 40px;
+    background-color: #f0f4f8;
+    flex-direction: row;
+  }
+  
+  .secim-button {
+    padding: 20px 40px;
+    font-size: 18px;
+    border: none;
+    border-radius: 12px;
+    background-color: #3b82f6;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  
+  .secim-button:hover {
+    background-color: #2563eb;
+  }
+  
