@@ -1,10 +1,24 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+/* Sticky footer için gerekli yapı */
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
 }
 
+/* Tüm uygulamayı saran container */
+.app-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* Ana içerik kısmı, footer'ı alta iter */
+.content-wrapper {
+  flex: 1;
+  padding: 2rem;
+}
+
+/* İsteğe bağlı logolu özel stiller */
 .logo {
   height: 6em;
   padding: 1.5em;
@@ -33,10 +47,12 @@
   }
 }
 
+/* Kart gibi görseller için */
 .card {
   padding: 2em;
 }
 
+/* Alt açıklama stilleri */
 .read-the-docs {
   color: #888;
 }

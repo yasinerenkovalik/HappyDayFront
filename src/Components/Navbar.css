@@ -1,15 +1,40 @@
-/* src/components/Navbar.css */
 .navbar {
-    display: flex;
-    justify-content: space-between;
-    background-color: #3f51b5;
-    padding: 1rem;
-    color: white;
-  }
-  
-  .navbar a {
-    color: white;
-    margin-left: 1rem;
-    text-decoration: none;
-  }
-  
+  background-color: #e91e63;
+  color: white;
+  padding: 12px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.logo {
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: white;
+  text-decoration: none;
+}
+
+.navbar-right {
+  display: flex;
+  gap: 18px;
+  align-items: center;
+}
+
+.navbar-right a,
+.logout-btn {
+  color: white;
+  text-decoration: none;
+  font-size: 1rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px 12px;
+}
+
+.logout-btn:hover,
+.navbar-right a:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+}

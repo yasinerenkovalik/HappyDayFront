@@ -1,26 +1,47 @@
 // src/components/Navbar.jsx
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import './Navbar.css';
 
 const Navbar = () => {
+  const navigate = useNavigate();
+  const isLoggedIn = !!localStorage.getItem('token');
+
+  let role = null;
+  const token = localStorage.getItem('token');
+
+  if (token) {
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      role = payload.role; // backend'de "role" olarak gönderilmişse
+    } catch (err) {
+      console.error("Token çözümlenemedi:", err);
+    }
+  }
+
   const handleLogout = () => {
     localStorage.removeItem('token');
-    window.location.href = '/login'; // veya navigate('/login') kullanabilirsin
+    navigate('/login');
   };
-  const isLoggedIn = localStorage.getItem('token');
+
   return (
     <nav className="navbar">
-      <Link to="/"><h1>Happy Day</h1></Link>
-      <div>
+      <div className="navbar-left">
+        <Link to="/" className="logo">🎉 HappyDay</Link>
+      </div>
+      <div className="navbar-right">
         <Link to="/">Ana Sayfa</Link>
         <Link to="/organizationlist">Organizasyonlar</Link>
-        {!isLoggedIn && <Link to="/register">Kayıt Ol</Link>}
-        {!isLoggedIn && <Link to="/login">Giriş Yap</Link>}
-        
-
-        {isLoggedIn && <Link to="/profile">Profil</Link>}
-        {isLoggedIn && <Link onClick={handleLogout} className="logout-button">Çıkış Yap</Link>}
-
+        {isLoggedIn ? (
+          <>
+            <Link to={role === "company" ? "/companyprofile" : "/userprofile"}>Profil</Link>
+            <button className="logout-btn" onClick={handleLogout}>Çıkış Yap</button>
+          </>
+        ) : (
+          <>
+            <Link to="/register">Kayıt Ol</Link>
+            <Link to="/login">Giriş Yap</Link>
+          </>
+        )}
       </div>
     </nav>
   );

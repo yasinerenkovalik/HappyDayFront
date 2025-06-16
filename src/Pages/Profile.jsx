@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { getUserById } from "../Api/api";
+import { user as userApi } from "../Api/api"; // user yerine userApi yazdık
 import { getUserIdFromToken } from "../Api/jwtdecode";
 import "./Profile.css";
 
@@ -8,7 +8,7 @@ const Profile = () => {
 
   useEffect(() => {
     const userId = getUserIdFromToken();
-    getUserById(userId)
+    userApi.getById(userId) // user yerine userApi kullandık
       .then((res) => setUser(res.data))
       .catch((err) => console.error("Profil bilgisi alınamadı:", err));
   }, []);
@@ -21,35 +21,22 @@ const Profile = () => {
         <div className="avatar-container">
           <img
             className="avatar"
-            src=""
+            src="https://bootdey.com/img/Content/avatar/avatar7.png"
             alt="Profile"
           />
-          <label htmlFor="fileUpload" className="upload-icon">
-            📷
-          </label>
-         
+          <label htmlFor="fileUpload" className="upload-icon">📷</label>
         </div>
-        <h2>{user.data.name} </h2>
-        <p>CEO of Apple</p>
+        <h2>{user.data.name}</h2>
+        <p>Kullanıcı</p>
         <div className="stats">
-          <div>
-            <span>Opportunities applied</span>{" "}
-            <strong style={{ color: "orange" }}>32</strong>
-          </div>
-          <div>
-            <span>Opportunities won</span>{" "}
-            <strong style={{ color: "green" }}>26</strong>
-          </div>
-          <div>
-            <span>Current opportunities</span> <strong>6</strong>
-          </div>
+          <div><span>Katıldığı Etkinlik</span> <strong style={{ color: "orange" }}>5</strong></div>
+          <div><span>Yorumlar</span> <strong style={{ color: "green" }}>3</strong></div>
+          <div><span>Rezervasyonlar</span> <strong>2</strong></div>
         </div>
-       
-       
       </div>
 
       <div className="form-section">
-        <h3>Account Settings</h3>
+        <h3>Hesap Bilgileri</h3>
         <form>
           <div className="form-group">
             <div className="readonly-field">{user.data.name}</div>
@@ -59,7 +46,6 @@ const Profile = () => {
             <div className="readonly-field">{user.data.email}</div>
             <div className="readonly-field">{user.data.lastName}</div>
           </div>
-       
         </form>
       </div>
     </div>

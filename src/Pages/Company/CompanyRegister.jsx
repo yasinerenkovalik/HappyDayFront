@@ -1,7 +1,7 @@
 // src/pages/Register.jsx
 import { useState } from 'react';
-import { registerCompany } from '../Api/api';
-import { CreateCompany } from '../entities/models';
+import { company } from '../../Api/api';
+import { CreateCompany } from '../../entities/models';
 
 const Register = () => {
   const [form, setForm] = useState({ ...CreateCompany });
@@ -24,7 +24,7 @@ const Register = () => {
       formData.append(key, form[key]);
     }
 
-    registerCompany(formData)
+    company.register(formData)
       .then(() => alert("Kayıt başarılı!"))
       .catch(err => alert("Hata: " + err.message));
   };

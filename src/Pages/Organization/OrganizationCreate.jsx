@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { getUserIdFromToken } from '../Api/jwtdecode'; // 🔁 senin fonksiyonunun yolu
+import { getUserIdFromToken } from '../../Api/jwtdecode';
+import { organization } from '../../Api/api';
 
 const AddOrganization = () => {
   const [formData, setFormData] = useState({
@@ -12,6 +12,7 @@ const AddOrganization = () => {
 
   const [companyId, setCompanyId] = useState('');
   const [images, setImages] = useState([]);
+  const [coverPhoto, setCoverPhoto] = useState(null); // ✅ Yeni alan
 
   useEffect(() => {
     const id = getUserIdFromToken();
@@ -29,6 +30,10 @@ const AddOrganization = () => {
     setImages(e.target.files);
   };
 
+  const handleCoverChange = (e) => {
+    setCoverPhoto(e.target.files[0]); // ✅ Tek dosya
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -42,19 +47,20 @@ const AddOrganization = () => {
     data.append("description", formData.description);
     data.append("price", formData.price);
     data.append("maxGuestCount", formData.maxGuestCount);
-    data.append("companyId", companyId); // ✅ token'dan gelen ID
+    data.append("companyId", companyId);
 
+    // ✅ Çoklu görseller
     for (let i = 0; i < images.length; i++) {
       data.append("images", images[i]);
     }
 
+    // ✅ Cover Photo
+    if (coverPhoto) {
+      data.append("coverPhoto", coverPhoto);
+    }
+
     try {
-      const response = await axios.post("http://localhost:5268/api/Organization/add", data, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-          "Authorization": `Bearer ${localStorage.getItem("token")}` // istersen token'ı header olarak da gönder
-        }
-      });
+      await organization.add(data);
       alert("Organizasyon başarıyla eklendi");
     } catch (error) {
       console.error(error);
@@ -71,7 +77,12 @@ const AddOrganization = () => {
         <input name="price" type="number" placeholder="Fiyat" onChange={handleChange} required /><br /><br />
         <input name="maxGuestCount" type="number" placeholder="Maksimum Katılımcı" onChange={handleChange} required /><br /><br />
 
+        <label>Galeri Görselleri:</label><br />
         <input type="file" name="images" multiple accept="image/*" onChange={handleImageChange} /><br /><br />
+
+        <label>Kapak Fotoğrafı:</label><br />
+        <input type="file" name="coverPhoto" accept="image/*" onChange={handleCoverChange} /><br /><br />
+
         <button type="submit">Ekle</button>
       </form>
     </div>

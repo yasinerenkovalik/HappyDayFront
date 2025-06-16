@@ -2,39 +2,42 @@ import axios from 'axios';
 
 const API_BASE_URL = 'http://localhost:5268/api';
 
-export const registerCompany = async (formData) => {
-  return axios.post(`${API_BASE_URL}/Company/add`, formData, {
-    headers: {
-      'Content-Type': 'multipart/form-data',
-    },
-  });
+const axiosInstance = axios.create({
+  baseURL: API_BASE_URL,
+});
+
+// Otomatik token ekleme
+axiosInstance.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
+// 📦 ORGANİZASYON API
+export const organization = {
+  getAll: () => axiosInstance.get('/Organization/OrganizationGetAll'),
+  getWithImages: (id) =>
+    axiosInstance.get(`/Organization/GetOrganizationWithImages?Id=${id}`),
+  add: (formData) =>
+    axiosInstance.post('/Organization/AddOrganization', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    }),
 };
 
-export const getOrganizations = async () => {
-  return axios.get(`${API_BASE_URL}/Organization/CompanyGetAll`);
+// 🧑‍💼 KULLANICI API
+export const user = {
+  login: (credentials) => axiosInstance.post('/User/login', credentials),
+  getById: (id) => axiosInstance.post('/User/getbyid', { id }),
 };
 
-export const loginUser = async (credentials) => {
-  return axios.post(`${API_BASE_URL}/User/login`, credentials);
+// 🏢 FİRMA API
+export const company = {
+  login: (credentials) => axiosInstance.post('/Company/login', credentials),
+  register: (formData) =>
+    axiosInstance.post('/Company/add', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    }),
+  getById: (id) => axiosInstance.post('/Company/getbyid', { id }),
 };
-export const loginCompany = async (credentials) => {
-  return axios.post(`${API_BASE_URL}/Company/login`, credentials);
-};
-
-export const getUserById = async (id) => {
-  console.log('merhaba',id)
-  return axios.post(
-    `${API_BASE_URL}/User/getbyid`,
-    { id },
-
-  );
-};
-export const getCompanyById = async (id) => {
-  console.log('merhaba',id)
-  return axios.post(
-    `${API_BASE_URL}/Company/getbyid`,
-    { id },
-
-  );
-};
-

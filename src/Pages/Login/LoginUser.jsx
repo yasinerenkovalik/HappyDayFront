@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { loginCompany } from '../Api/api'; // doğru path'e göre düzelt
+import { user } from '../../Api/api'; // doğru path'e göre düzelt
 import './LoginUser.css';
 
-const LoginCompany = () => {
+const LoginUser = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -20,8 +20,7 @@ const LoginCompany = () => {
     setLoading(true);
 
     try {
-        //burayı değiştir
-      const response = await loginCompany({ email, password });
+      const response = await user.login({ email, password });
 
       const result = response.data;
 
@@ -44,7 +43,7 @@ const LoginCompany = () => {
   return (
     <div className="login-container">
       <div className="login-box">
-        <h2>Şirket Giriş Yap</h2>
+        <h2>Müşteri Giriş Yap</h2>
 
         {error && <div className="error">{error}</div>}
 
@@ -52,7 +51,7 @@ const LoginCompany = () => {
           <div className="input-group">
             <label htmlFor="email">E-posta</label>
             <input
-              type="tesxt"
+              type="email"
               id="email"
               placeholder="E-posta adresinizi girin"
               value={email}
@@ -86,4 +85,4 @@ const LoginCompany = () => {
   );
 };
 
-export default LoginCompany;
+export default LoginUser;

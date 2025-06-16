@@ -1,17 +1,18 @@
 import { Routes, Route, Outlet } from 'react-router-dom';
-import Home from '../Pages/Home';
-import Register from '../Pages/CompanyRegister';
+import Home from '../Pages/Home/Home';
+import Register from '../Pages/Company/CompanyRegister';
 import Profile from '../Pages/Profile';
-import Reservasyon from '../Pages/Reservasyon';
+import Reservasyon from '../Pages/Reservation/Reservasyon';
 import PrivateRoute from './PrivateRoute';
-import LoginUser from '../Pages/LoginUser';
-import LoginCompany from '../Pages/LoginCompany';
-import CompanyProfile from '../Pages/CompanyProfile';
-import Login from '../Pages/Login';
-import AddOrganization from '../Pages/OrganizationCreate';
-import OrganizationList from '../Pages/OrganizationsList';
-import OrganizationDetail from '../Pages/OrganizationDetail';
-import NotFound from '../Pages/NotFound';
+import LoginUser from '../Pages/Login/LoginUser';
+import LoginCompany from '../Pages/Login/LoginCompany';
+import CompanyProfile from '../Pages/Company/CompanyProfile';
+import Login from '../Pages/Login/Login';
+import AddOrganization from '../Pages/Organization/OrganizationCreate';
+import OrganizationList from '../Pages/Organization/OrganizationsList';
+import OrganizationDetail from '../Pages/Organization/OrganizationDetail';
+import AdminPanel from '../Pages/Admin/AdminPanel';
+import NotFound from '../Components/NotFound';
 
 const ProtectedLayout = () => {
   return (
@@ -32,10 +33,12 @@ function AppRoutes() {
       <Route path="/logincompany" element={<LoginCompany />} />
       <Route path="/organizationlist" element={<OrganizationList />} />
       <Route path="/organizationdetail/:id" element={<OrganizationDetail />} />
+      <Route path="/admin/*" element={<AdminPanel />} />
 
       {/* Protected Routes */}
       <Route element={<PrivateRoute />}>
-        <Route path="/profile" element={<Profile />} />
+            
+        <Route path="/userprofile" element={<Profile />} />
         <Route path="/companyprofile" element={<CompanyProfile />} />
         <Route path="/reservasyon" element={<Reservasyon />} />
         <Route path="/organizationCreate" element={<AddOrganization />} />
