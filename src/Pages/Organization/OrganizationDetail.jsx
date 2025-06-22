@@ -1,10 +1,8 @@
+// src/components/OrganizationDetail.jsx
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { organization } from '../../Api/api';
-
+import { organization as organizationApi } from '../../Api/api';
 import './OrganizationDetail.css';
-
-const API_BASE_URL = 'http://localhost:5268/api';
 
 const OrganizationDetail = () => {
   const { id } = useParams();
@@ -12,60 +10,114 @@ const OrganizationDetail = () => {
   const [selectedImage, setSelectedImage] = useState(null);
 
   useEffect(() => {
-    organization.getWithImages(id)
+    organizationApi.getWithImages(id)
       .then(res => {
-        if (res.data && res.data.data) {
+        if (res.data?.data) {
           setOrganization(res.data.data);
-          setSelectedImage(res.data.data.imageUrls[0]);
+          setSelectedImage(res.data.data.imageUrls?.[0]);
         }
       })
-      .catch(err => console.error(err));
+      .catch(console.error);
   }, [id]);
 
   if (!organization) return <p>Yükleniyor...</p>;
 
   return (
-    <div className="org-detail-container">
-      <div className="org-left">
-        <img
-          src={`http://localhost:5268${selectedImage}`}
-          alt="Kapak Görseli"
-          className="main-image"
-        />
-
-        <div className="thumbnail-gallery">
-          {organization.imageUrls.map((url, i) => (
+    <div className="container-fluid px-5 py-5">
+      <div className="row gx-5 gy-5">
+        {/* Sol Kısım: Görseller ve Detaylar */}
+        <div className="col-lg-8">
+          <div className="position-relative rounded overflow-hidden shadow">
             <img
-              key={i}
-              src={`http://localhost:5268${url}`}
-              alt={`Resim ${i + 1}`}
-              className={`thumb ${selectedImage === url ? 'active' : ''}`}
-              onClick={() => setSelectedImage(url)}
+              src={`http://localhost:5268${selectedImage}`}
+              alt="Kapak Görseli"
+              className="img-fluid w-100 rounded"
+              style={{ maxHeight: '500px', objectFit: 'contain' }}
             />
-          ))}
+          </div>
+
+          <div className="d-flex gap-3 mt-3 flex-wrap">
+            {organization.imageUrls?.map((url, i) => (
+              <img
+                key={i}
+                src={`http://localhost:5268${url}`}
+                alt={`Resim ${i + 1}`}
+                className={`rounded border shadow-sm ${selectedImage === url ? 'border-primary border-3' : 'border-light'}`}
+                onClick={() => setSelectedImage(url)}
+                style={{ width: '80px', height: '80px', objectFit: 'cover', cursor: 'pointer' }}
+              />
+            ))}
+          </div>
+
+          <div className="mt-4 p-5 bg-white rounded shadow-sm border border-light-subtle">
+            <h1 className="text-primary fw-bold mb-4 border-bottom pb-2">{organization.title}</h1>
+            <p className="text-muted fs-5 mb-4">{organization.description}</p>
+
+            <div className="row gy-4">
+              <div className="col-md-6">
+                <div className="border rounded p-3 h-100 bg-light">
+                  <i className="bi bi-geo-alt-fill text-danger me-2"></i><strong>Adres:</strong><br /> {organization.location || 'Bilgi yok'}
+                </div>
+              </div>
+              <div className="col-md-6">
+                <div className="border rounded p-3 h-100 bg-light">
+                  <i className="bi bi-telephone-fill text-success me-2"></i><strong>Telefon:</strong><br /> {organization.phoneNumber || 'Bilgi yok'}
+                </div>
+              </div>
+              <div className="col-md-6">
+                <div className="border rounded p-3 h-100 bg-light">
+                  <i className="bi bi-clock-fill text-info me-2"></i><strong>Hizmet Saatleri:</strong><br /> {organization.duration || 'Bilgi yok'}
+                </div>
+              </div>
+              <div className="col-md-6">
+                <div className="border rounded p-3 h-100 bg-light">
+                  <i className="bi bi-people-fill text-warning me-2"></i><strong>Kapasite:</strong><br /> {organization.maxGuestCount} kişi
+                </div>
+              </div>
+              <div className="col-md-6">
+                <div className="border rounded p-3 h-100 bg-light">
+                  <i className="bi bi-cash-coin text-primary me-2"></i><strong>Kişi Başı Fiyat:</strong><br /> {organization.price} ₺
+                </div>
+              </div>
+              <div className="col-md-6">
+                <div className="border rounded p-3 h-100 bg-light">
+                  <strong className="d-block mb-2">💡 Hizmetler:</strong>
+                  {organization.services?.length > 0 ? (
+                    <ul className="list-unstyled mb-0">
+                      {organization.services.map((s, i) => (
+                        <li key={i}>✔️ {s}</li>
+                      ))}
+                    </ul>
+                  ) : (
+                    ' Belirtilmemiş'
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <h2>{organization.title}</h2>
-        <p>{organization.description}</p>
-        <p><strong>Kapasite:</strong> {organization.maxGuestCount} kişi</p>
-        <p><strong>Kişi Başı:</strong> {organization.price} ₺</p>
-      </div>
-
-      <div className="org-right">
-        <h3>İletişim Formu</h3>
-        <form>
-          <input placeholder="Ad Soyad" />
-          <input placeholder="E-posta" />
-          <input placeholder="Telefon" />
-          <input placeholder="Tahmini Düğün Tarihi" />
-          <input placeholder="Tahmini Davetli Sayısı" />
-          <textarea placeholder="Fiyat, kapasite, menü gibi sorularınızı yazın..." />
-          <div className="checkbox-area">
-            <input type="checkbox" id="sozlesme" />
-            <label htmlFor="sozlesme">Sözleşmeleri okudum, kabul ediyorum</label>
+        {/* Sağ Kısım: İletişim Formu */}
+        <div className="col-lg-4">
+          <div className="p-5 bg-white rounded shadow border border-primary-subtle">
+            <h4 className="text-center text-primary mb-4">📩 İletişim Formu</h4>
+            <form className="d-flex flex-column gap-3">
+              <input placeholder="Ad Soyad" className="form-control" />
+              <input placeholder="E-posta" className="form-control" />
+              <input placeholder="Telefon" className="form-control" />
+              <input placeholder="Tahmini Düğün Tarihi" className="form-control" />
+              <input placeholder="Tahmini Davetli Sayısı" className="form-control" />
+              <textarea placeholder="Fiyat, kapasite, menü gibi sorularınızı yazın..." className="form-control" rows={3} />
+              <div className="form-check">
+                <input type="checkbox" className="form-check-input" id="sozlesme" />
+                <label className="form-check-label" htmlFor="sozlesme">
+                  Sözleşmeleri okudum, kabul ediyorum
+                </label>
+              </div>
+              <button type="submit" className="btn btn-primary w-100">Ücretsiz Teklif Al</button>
+            </form>
           </div>
-          <button type="submit">Ücretsiz Teklif Al</button>
-        </form>
+        </div>
       </div>
     </div>
   );

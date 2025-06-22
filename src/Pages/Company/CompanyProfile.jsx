@@ -1,16 +1,17 @@
-// src/components/CompanyProfile.jsx
 import { useEffect, useState } from "react";
+import { Link } from 'react-router-dom';
 import { getUserIdFromToken } from "../../Api/jwtdecode";
-import { company } from "../../Api/api";
+import { company, organization } from "../../Api/api";
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 const CompanyProfile = () => {
   const [companyProfile, setCompanyProfile] = useState(null);
+  const [organizationList, setOrganizationList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   useEffect(() => {
-    const fetchProfile = async () => {
+    const fetchData = async () => {
       const userId = getUserIdFromToken();
       if (!userId) {
         setError("Geçersiz token — lütfen tekrar giriş yapın.");
@@ -19,21 +20,22 @@ const CompanyProfile = () => {
       }
 
       try {
-        const response = await company.getById(userId);
-        if (!response.data.isSuccess) {
-          throw new Error(response.data.message || "Profil alınamadı.");
+        const companyRes = await company.getById(userId);
+        if (!companyRes.data.isSuccess) throw new Error(companyRes.data.message);
+        setCompanyProfile(companyRes.data.data);
+
+        const orgRes = await organization.getByCompanyId(userId);
+        if (orgRes.data && Array.isArray(orgRes.data.data)) {
+          setOrganizationList(orgRes.data.data);
         }
-        setCompanyProfile(response.data.data);
-        console.log("Şirket bilgisi:", response.data.data);
       } catch (err) {
-        console.error("Profil çekme hatası:", err);
-        setError(err.message || "Profil bilgileri alınırken bir hata oluştu.");
+        setError(err.message || "Bir hata oluştu.");
       } finally {
         setLoading(false);
       }
     };
 
-    fetchProfile();
+    fetchData();
   }, []);
 
   if (loading) return <div className="text-center py-5">Yükleniyor...</div>;
@@ -43,6 +45,7 @@ const CompanyProfile = () => {
   return (
     <div className="container py-5">
       <div className="row g-4">
+        {/* Sol Kısım */}
         <div className="col-md-4">
           <div className="card shadow-sm border-0">
             <div className="card-body text-center">
@@ -74,8 +77,9 @@ const CompanyProfile = () => {
           </div>
         </div>
 
+        {/* Sağ Kısım */}
         <div className="col-md-8">
-          <div className="card shadow-sm border-0">
+          <div className="card shadow-sm border-0 mb-4">
             <div className="card-body">
               <h4 className="mb-4">Firma Bilgileri</h4>
               <div className="row mb-3">
@@ -88,9 +92,7 @@ const CompanyProfile = () => {
               </div>
               <div className="row mb-3">
                 <div className="col-sm-4 fw-bold">Hizmet Açıklaması</div>
-                <div className="col-sm-8">
-                  {companyProfile.description || 'Henüz açıklama girilmemiş.'}
-                </div>
+                <div className="col-sm-8">{companyProfile.description || 'Henüz açıklama girilmemiş.'}</div>
               </div>
               <div className="text-end">
                 <button className="btn btn-outline-dark">Profili Düzenle</button>
@@ -98,11 +100,38 @@ const CompanyProfile = () => {
             </div>
           </div>
 
-          <div className="card mt-4 shadow-sm border-0">
+          {/* Organizasyonlar */}
+          <div className="card shadow-sm border-0">
             <div className="card-body">
               <h5 className="mb-3">Organizasyonlarım</h5>
-              <div className="alert alert-info">Henüz bir organizasyon eklemediniz.</div>
-              <button className="btn btn-success">+ Organizasyon Ekle</button>
+              {organizationList.length === 0 ? (
+                <div className="alert alert-info">Henüz bir organizasyon eklemediniz.</div>
+              ) : (
+                <div className="d-flex flex-row flex-nowrap overflow-auto gap-3 pb-2">
+                  {organizationList.map((org) => (
+                    <div key={org.id} className="card shadow-sm" style={{ minWidth: "250px" }}>
+                      <div className="card-body">
+                      <img
+                      src={`http://localhost:5268${org.coverPhotoPath}`}
+                      alt={org.title}
+                      className="img-fluid rounded-start"
+                      style={{ maxHeight: '180px', objectFit: 'cover' }}
+                    />
+                        <h6 className="fw-bold">{org.title}</h6>
+                        <p className="text-muted small">
+                          {org.description?.length > 60 ? `${org.description.slice(0, 60)}...` : org.description}
+                        </p>
+                        <Link to={`/organizationdetail/${org.id}`} className="btn btn-sm btn-primary">
+                          Profili Gör
+                        </Link>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+              <div className="mt-3">
+                <Link to="/organizationCreate" className="btn btn-outline-success btn-sm">+ Organizasyon Ekle</Link>
+              </div>
             </div>
           </div>
 

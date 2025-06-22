@@ -51,7 +51,7 @@ const LoginUser = () => {
           <div className="input-group">
             <label htmlFor="email">E-posta</label>
             <input
-              type="email"
+              type="text "
               id="email"
               placeholder="E-posta adresinizi girin"
               value={email}

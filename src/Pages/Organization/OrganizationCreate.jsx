@@ -1,63 +1,70 @@
 import React, { useState, useEffect } from 'react';
 import { getUserIdFromToken } from '../../Api/jwtdecode';
 import { organization } from '../../Api/api';
+import axios from 'axios';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 const AddOrganization = () => {
   const [formData, setFormData] = useState({
     title: '',
     description: '',
     price: '',
-    maxGuestCount: ''
+    maxGuestCount: '',
+    categoryId: '',
+    location: '',
+    services: '',
+    duration: '',
+    isOutdoor: false,
+    reservationNote: '',
+    cancelPolicy: '',
+    videoUrl: ''
   });
 
   const [companyId, setCompanyId] = useState('');
+  const [categories, setCategories] = useState([]);
   const [images, setImages] = useState([]);
-  const [coverPhoto, setCoverPhoto] = useState(null); // ✅ Yeni alan
+  const [coverPhoto, setCoverPhoto] = useState(null);
 
   useEffect(() => {
     const id = getUserIdFromToken();
     setCompanyId(id);
   }, []);
 
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const res = await axios.get("http://localhost:5268/api/Category/OrganizationGetAll");
+        setCategories(res.data.data || []);
+      } catch (err) {
+        console.error("Kategori verisi alınamadı", err);
+      }
+    };
+    fetchCategories();
+  }, []);
+
   const handleChange = (e) => {
+    const { name, value, type, checked } = e.target;
     setFormData(prev => ({
       ...prev,
-      [e.target.name]: e.target.value
+      [name]: type === 'checkbox' ? checked : value
     }));
   };
 
-  const handleImageChange = (e) => {
-    setImages(e.target.files);
-  };
-
-  const handleCoverChange = (e) => {
-    setCoverPhoto(e.target.files[0]); // ✅ Tek dosya
-  };
+  const handleImageChange = (e) => setImages(e.target.files);
+  const handleCoverChange = (e) => setCoverPhoto(e.target.files[0]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    if (!companyId) {
-      alert("Kullanıcı ID alınamadı, giriş yapmış olmalısınız.");
-      return;
-    }
+    if (!companyId) return alert("Kullanıcı ID alınamadı.");
 
     const data = new FormData();
-    data.append("title", formData.title);
-    data.append("description", formData.description);
-    data.append("price", formData.price);
-    data.append("maxGuestCount", formData.maxGuestCount);
+    Object.entries(formData).forEach(([key, value]) => data.append(key, value));
     data.append("companyId", companyId);
 
-    // ✅ Çoklu görseller
     for (let i = 0; i < images.length; i++) {
       data.append("images", images[i]);
     }
-
-    // ✅ Cover Photo
-    if (coverPhoto) {
-      data.append("coverPhoto", coverPhoto);
-    }
+    if (coverPhoto) data.append("coverPhoto", coverPhoto);
 
     try {
       await organization.add(data);
@@ -69,22 +76,89 @@ const AddOrganization = () => {
   };
 
   return (
-    <div style={{ maxWidth: '600px', margin: 'auto' }}>
-      <h2>Organizasyon Ekle</h2>
-      <form onSubmit={handleSubmit} encType="multipart/form-data">
-        <input name="title" placeholder="Başlık" onChange={handleChange} required /><br /><br />
-        <textarea name="description" placeholder="Açıklama" onChange={handleChange} required /><br /><br />
-        <input name="price" type="number" placeholder="Fiyat" onChange={handleChange} required /><br /><br />
-        <input name="maxGuestCount" type="number" placeholder="Maksimum Katılımcı" onChange={handleChange} required /><br /><br />
+    <div className="container py-5">
+      <div className="card shadow p-4">
+        <h2 className="mb-4">Organizasyon Ekle</h2>
+        <form onSubmit={handleSubmit} encType="multipart/form-data">
+          <div className="mb-3">
+            <label className="form-label">Başlık</label>
+            <input className="form-control" name="title" onChange={handleChange} required />
+          </div>
 
-        <label>Galeri Görselleri:</label><br />
-        <input type="file" name="images" multiple accept="image/*" onChange={handleImageChange} /><br /><br />
+          <div className="mb-3">
+            <label className="form-label">Açıklama</label>
+            <textarea className="form-control" name="description" onChange={handleChange} required />
+          </div>
 
-        <label>Kapak Fotoğrafı:</label><br />
-        <input type="file" name="coverPhoto" accept="image/*" onChange={handleCoverChange} /><br /><br />
+          <div className="row">
+            <div className="col-md-6 mb-3">
+              <label className="form-label">Fiyat</label>
+              <input type="number" className="form-control" name="price" onChange={handleChange} required />
+            </div>
+            <div className="col-md-6 mb-3">
+              <label className="form-label">Maksimum Katılımcı</label>
+              <input type="number" className="form-control" name="maxGuestCount" onChange={handleChange} required />
+            </div>
+          </div>
 
-        <button type="submit">Ekle</button>
-      </form>
+          <div className="mb-3">
+            <label className="form-label">Kategori</label>
+            <select className="form-select" name="categoryId" value={formData.categoryId} onChange={handleChange} required>
+              <option value="">Kategori Seçiniz</option>
+              {categories.map((cat) => (
+                <option key={cat.id} value={cat.id}>{cat.name}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="mb-3">
+            <label className="form-label">Konum</label>
+            <input className="form-control" name="location" onChange={handleChange} />
+          </div>
+
+          <div className="mb-3">
+            <label className="form-label">Hizmetler</label>
+            <input className="form-control" name="services" onChange={handleChange} placeholder="Virgülle ayırınız (örn: DJ, Kamera, Yemek)" />
+          </div>
+
+          <div className="mb-3">
+            <label className="form-label">Süre</label>
+            <input className="form-control" name="duration" onChange={handleChange} />
+          </div>
+
+          <div className="form-check form-switch mb-3">
+            <input className="form-check-input" type="checkbox" name="isOutdoor" checked={formData.isOutdoor} onChange={handleChange} />
+            <label className="form-check-label">Açık Hava Organizasyonu</label>
+          </div>
+
+          <div className="mb-3">
+            <label className="form-label">Rezervasyon Notu</label>
+            <input className="form-control" name="reservationNote" onChange={handleChange} />
+          </div>
+
+          <div className="mb-3">
+            <label className="form-label">İptal Politikası</label>
+            <input className="form-control" name="cancelPolicy" onChange={handleChange} />
+          </div>
+
+          <div className="mb-3">
+            <label className="form-label">Tanıtım Videosu (YouTube URL)</label>
+            <input className="form-control" name="videoUrl" onChange={handleChange} />
+          </div>
+
+          <div className="mb-3">
+            <label className="form-label">Galeri Görselleri</label>
+            <input className="form-control" type="file" multiple accept="image/*" onChange={handleImageChange} />
+          </div>
+
+          <div className="mb-3">
+            <label className="form-label">Kapak Fotoğrafı</label>
+            <input className="form-control" type="file" accept="image/*" onChange={handleCoverChange} />
+          </div>
+
+          <button type="submit" className="btn btn-primary">Organizasyonu Ekle</button>
+        </form>
+      </div>
     </div>
   );
 };

@@ -24,7 +24,10 @@ export const organization = {
     axiosInstance.post('/Organization/AddOrganization', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     }),
+  getByCompanyId: (companyId) =>
+    axiosInstance.get(`/Organization/GetOrganizationWithICompany?Id=${companyId}`),
 };
+
 
 // 🧑‍💼 KULLANICI API
 export const user = {
