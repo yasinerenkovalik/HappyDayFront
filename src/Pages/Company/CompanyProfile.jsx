@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { getUserIdFromToken } from "../../Api/jwtdecode";
 import { company, organization } from "../../Api/api";
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -9,6 +9,7 @@ const CompanyProfile = () => {
   const [organizationList, setOrganizationList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -37,6 +38,19 @@ const CompanyProfile = () => {
 
     fetchData();
   }, []);
+
+  const handleDelete = async (id) => {
+    if (window.confirm("Bu organizasyonu silmek istediğinize emin misiniz?")) {
+      try {
+        await organization.delete(id);
+        setOrganizationList(prev => prev.filter(org => org.id !== id));
+        alert("Organizasyon başarıyla silindi.");
+      } catch (err) {
+        console.error(err);
+        alert("Silme işlemi sırasında hata oluştu.");
+      }
+    }
+  };
 
   if (loading) return <div className="text-center py-5">Yükleniyor...</div>;
   if (error) return <div className="text-danger text-center py-5">{error}</div>;
@@ -107,23 +121,31 @@ const CompanyProfile = () => {
               {organizationList.length === 0 ? (
                 <div className="alert alert-info">Henüz bir organizasyon eklemediniz.</div>
               ) : (
-                <div className="d-flex flex-row flex-nowrap overflow-auto gap-3 pb-2">
+                <div className="row row-cols-1 g-3">
                   {organizationList.map((org) => (
-                    <div key={org.id} className="card shadow-sm" style={{ minWidth: "250px" }}>
-                      <div className="card-body">
-                      <img
-                      src={`http://localhost:5268${org.coverPhotoPath}`}
-                      alt={org.title}
-                      className="img-fluid rounded-start"
-                      style={{ maxHeight: '180px', objectFit: 'cover' }}
-                    />
-                        <h6 className="fw-bold">{org.title}</h6>
-                        <p className="text-muted small">
-                          {org.description?.length > 60 ? `${org.description.slice(0, 60)}...` : org.description}
-                        </p>
-                        <Link to={`/organizationdetail/${org.id}`} className="btn btn-sm btn-primary">
-                          Profili Gör
-                        </Link>
+                    <div key={org.id} className="col">
+                      <div className="card shadow-sm position-relative">
+                        <img
+                          src={`http://localhost:5268${org.coverPhotoPath}`}
+                          alt={org.title}
+                          className="card-img-top"
+                          style={{ height: '200px', objectFit: 'cover' }}
+                        />
+                        <div className="card-body">
+                          <h6 className="fw-bold">{org.title}</h6>
+                          <p className="text-muted small">
+                            {org.description?.length > 60 ? `${org.description.slice(0, 60)}...` : org.description}
+                          </p>
+                          <Link to={`/organizationdetail/${org.id}`} className="btn btn-sm btn-primary me-2">
+                            Profili Gör
+                          </Link>
+                          <Link to={`/organizationEdit/${org.id}`} className="btn btn-sm btn-outline-secondary me-2">
+                            ✏️
+                          </Link>
+                          <button onClick={() => handleDelete(org.id)} className="btn btn-sm btn-outline-danger">
+                            🗑️
+                          </button>
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -134,7 +156,6 @@ const CompanyProfile = () => {
               </div>
             </div>
           </div>
-
         </div>
       </div>
     </div>

@@ -24,6 +24,8 @@ export const organization = {
     axiosInstance.post('/Organization/AddOrganization', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     }),
+    getById: (id) => axiosInstance.get(`/Organization/OrganizationGetById?id=${id}`),
+  delete: (id) => axiosInstance.delete(`/Organization/DeleteOrganization/${id}`),
   getByCompanyId: (companyId) =>
     axiosInstance.get(`/Organization/GetOrganizationWithICompany?Id=${companyId}`),
 };

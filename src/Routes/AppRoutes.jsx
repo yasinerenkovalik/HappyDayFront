@@ -11,6 +11,7 @@ import Login from '../Pages/Login/Login';
 import AddOrganization from '../Pages/Organization/OrganizationCreate';
 import OrganizationList from '../Pages/Organization/OrganizationsList';
 import OrganizationDetail from '../Pages/Organization/OrganizationDetail';
+import OrganizationEdit from '../Pages/Organization/OrganizationEdit';
 import AdminPanel from '../Pages/Admin/AdminPanel';
 import NotFound from '../Components/NotFound';
 
@@ -39,6 +40,7 @@ function AppRoutes() {
       <Route element={<PrivateRoute />}>
             
         <Route path="/userprofile" element={<Profile />} />
+        <Route path="/organizationEdit/:id" element={<OrganizationEdit />} />
         <Route path="/companyprofile" element={<CompanyProfile />} />
         <Route path="/reservasyon" element={<Reservasyon />} />
         <Route path="/organizationCreate" element={<AddOrganization />} />
