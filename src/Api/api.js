@@ -24,6 +24,10 @@ export const organization = {
     axiosInstance.post('/Organization/AddOrganization', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     }),
+    edit: (formData) =>
+      axios.put(`${API_BASE_URL}/Organization/OrganizationUpdate`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      }),
     getById: (id) => axiosInstance.get(`/Organization/OrganizationGetById?id=${id}`),
   delete: (id) => axiosInstance.delete(`/Organization/DeleteOrganization/${id}`),
   getByCompanyId: (companyId) =>

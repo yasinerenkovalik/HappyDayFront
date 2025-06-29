@@ -1,61 +1,61 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import { useParams } from 'react-router-dom';
 import { organization } from '../../Api/api';
-import { getUserIdFromToken } from '../../Api/jwtdecode';
 
 const OrganizationEdit = () => {
   const { id } = useParams();
-  const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    id: '',
     title: '',
     description: '',
-    price: '',
-    maxGuestCount: '',
+    price: 0,
+    maxGuestCount: 0,
     categoryId: '',
     location: '',
-    services: '',
+    services: [],
     duration: '',
     isOutdoor: false,
     reservationNote: '',
     cancelPolicy: '',
-    videoUrl: ''
+    videoUrl: '',
+    companyId: ''
   });
   const [coverPhoto, setCoverPhoto] = useState(null);
-  const [images, setImages] = useState([]);
-  const [categories, setCategories] = useState([]);
+  const [coverPreview, setCoverPreview] = useState('');
 
   useEffect(() => {
-    const fetchOrganization = async () => {
-      const form = new FormData();
-      form.append("Id", id);
-      const res = await axios.post('http://localhost:5268/api/Organization/OrganizationGetById', form);
-      const data = res.data.data;
-      setFormData({
-        id: data.id,
-        title: data.title,
-        description: data.description,
-        price: data.price,
-        maxGuestCount: data.maxGuestCount,
-        categoryId: data.categoryId,
-        location: data.location,
-        services: data.services.join(', '),
-        duration: data.duration,
-        isOutdoor: data.isOutdoor,
-        reservationNote: data.reservationNote,
-        cancelPolicy: data.cancelPolicy,
-        videoUrl: data.videoUrl
-      });
+    const fetchOrg = async () => {
+      try {
+        const res = await organization.getById(id);
+        const org = res.data.data;
+
+        if (!org) return alert("Veri bulunamadı.");
+
+        setFormData({
+          title: org.title || '',
+          description: org.description || '',
+          price: org.price || 0,
+          maxGuestCount: org.maxGuestCount || 0,
+          categoryId: org.categoryId?.toString() || '',
+          location: org.location || '',
+          services: org.services || [],
+          duration: org.duration || '',
+          isOutdoor: org.isOutdoor || false,
+          reservationNote: org.reservationNote || '',
+          cancelPolicy: org.cancelPolicy || '',
+          videoUrl: org.videoUrl || '',
+          companyId: org.companyId || ''
+        });
+
+        if (org.coverPhotoPath) {
+          setCoverPreview(`http://localhost:5268${org.coverPhotoPath}`);
+        }
+      } catch (err) {
+        console.error("Veri çekme hatası:", err);
+        alert("Veri çekilemedi.");
+      }
     };
 
-    const fetchCategories = async () => {
-      const res = await axios.get("http://localhost:5268/api/Category/OrganizationGetAll");
-      setCategories(res.data.data);
-    }
-
-    fetchOrganization();
-    fetchCategories();
+    fetchOrg();
   }, [id]);
 
   const handleChange = (e) => {
@@ -66,68 +66,79 @@ const OrganizationEdit = () => {
     }));
   };
 
+  const handleServiceChange = (e) => {
+    setFormData({ ...formData, services: e.target.value.split(',') });
+  };
+
+  const handleCoverChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setCoverPhoto(file);
+      setCoverPreview(URL.createObjectURL(file));
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const userId = getUserIdFromToken();
+
     const data = new FormData();
+    data.append('Id', id);
+    data.append('Title', formData.title);
+    data.append('Description', formData.description);
+    data.append('Price', String(formData.price));
+    data.append('MaxGuestCount', String(formData.maxGuestCount));
+    data.append('CategoryId', formData.categoryId);
+    data.append('Location', formData.location);
+    data.append('Duration', formData.duration);
+    data.append('IsOutdoor', String(formData.isOutdoor));
+    data.append('ReservationNote', formData.reservationNote);
+    data.append('CancelPolicy', formData.cancelPolicy);
+    data.append('VideoUrl', formData.videoUrl);
+    data.append('CompanyId', formData.companyId);
 
-    Object.entries(formData).forEach(([key, value]) => {
-      if (key === 'services') {
-        value.split(',').forEach(s => data.append('Services', s.trim()));
-      } else {
-        data.append(key, value);
-      }
-    });
+    formData.services.forEach(s => data.append('Services', s));
 
-    data.append('CompanyId', userId);
-
-    if (coverPhoto) data.append('CoverPhoto', coverPhoto);
-    for (let i = 0; i < images.length; i++) {
-      data.append('Images', images[i]);
+    if (coverPhoto) {
+      data.append('CoverPhoto', coverPhoto);
     }
 
     try {
-      await axios.post('http://localhost:5268/api/Organization/EditOrganization', data);
-      alert('Güncelleme başarılı!');
-      navigate('/company-profile');
+      await organization.edit(data);
+      alert("Organizasyon başarıyla güncellendi!");
     } catch (err) {
-      console.error(err);
-      alert('Hata oluştu.');
+      console.error("Güncelleme hatası:", err);
+      alert("Güncelleme başarısız.");
     }
   };
 
   return (
-    <div className="container py-4" style={{ maxWidth: '700px' }}>
-      <h3>Organizasyonu Güncelle</h3>
-      <form onSubmit={handleSubmit}>
-        <input name="title" value={formData.title} onChange={handleChange} placeholder="Başlık" className="form-control mb-2" required />
-        <textarea name="description" value={formData.description} onChange={handleChange} placeholder="Açıklama" className="form-control mb-2" required />
-        <input name="price" type="number" value={formData.price} onChange={handleChange} placeholder="Fiyat" className="form-control mb-2" required />
-        <input name="maxGuestCount" type="number" value={formData.maxGuestCount} onChange={handleChange} placeholder="Max Katılımcı" className="form-control mb-2" required />
-        <input name="location" value={formData.location} onChange={handleChange} placeholder="Lokasyon" className="form-control mb-2" required />
+    <div className="container mt-4">
+      <h2>Organizasyon Güncelle</h2>
+      <form onSubmit={handleSubmit} encType="multipart/form-data">
+        <input name="title" value={formData.title} onChange={handleChange} className="form-control my-2" placeholder="Başlık" />
+        <textarea name="description" value={formData.description} onChange={handleChange} className="form-control my-2" placeholder="Açıklama" />
+        <input name="price" type="number" value={formData.price} onChange={handleChange} className="form-control my-2" placeholder="Fiyat" />
+        <input name="maxGuestCount" type="number" value={formData.maxGuestCount} onChange={handleChange} className="form-control my-2" placeholder="Max Katılımcı" />
+        <input name="categoryId" value={formData.categoryId} onChange={handleChange} className="form-control my-2" placeholder="Kategori ID" />
+        <input name="location" value={formData.location} onChange={handleChange} className="form-control my-2" placeholder="Lokasyon" />
+        <input name="duration" value={formData.duration} onChange={handleChange} className="form-control my-2" placeholder="Süre" />
+        <textarea name="reservationNote" value={formData.reservationNote} onChange={handleChange} className="form-control my-2" placeholder="Rezervasyon Notu" />
+        <textarea name="cancelPolicy" value={formData.cancelPolicy} onChange={handleChange} className="form-control my-2" placeholder="İptal Politikası" />
+        <input name="videoUrl" value={formData.videoUrl} onChange={handleChange} className="form-control my-2" placeholder="Video URL" />
+        <input type="text" name="services" value={formData.services.join(',')} onChange={handleServiceChange} placeholder="Hizmetler (virgülle ayır)" className="form-control my-2" />
 
-        <select name="categoryId" value={formData.categoryId} onChange={handleChange} className="form-select mb-2">
-          <option value="">Kategori Seçiniz</option>
-          {categories.map(cat => (
-            <option key={cat.id} value={cat.id}>{cat.name}</option>
-          ))}
-        </select>
-
-        <input name="services" value={formData.services} onChange={handleChange} placeholder="Hizmetler (virgülle ayırın)" className="form-control mb-2" />
-        <input name="duration" value={formData.duration} onChange={handleChange} placeholder="Süre" className="form-control mb-2" />
-        <input name="reservationNote" value={formData.reservationNote} onChange={handleChange} placeholder="Rezervasyon Notu" className="form-control mb-2" />
-        <input name="cancelPolicy" value={formData.cancelPolicy} onChange={handleChange} placeholder="İptal Politikası" className="form-control mb-2" />
-        <input name="videoUrl" value={formData.videoUrl} onChange={handleChange} placeholder="Video URL" className="form-control mb-2" />
         <div className="form-check mb-2">
-          <input type="checkbox" className="form-check-input" id="outdoor" name="isOutdoor" checked={formData.isOutdoor} onChange={handleChange} />
-          <label className="form-check-label" htmlFor="outdoor">Açık Alan</label>
+          <input type="checkbox" name="isOutdoor" checked={formData.isOutdoor} onChange={handleChange} className="form-check-input" />
+          <label className="form-check-label">Açık Hava</label>
         </div>
-        <label>Kapak Fotoğrafı:</label>
-        <input type="file" onChange={e => setCoverPhoto(e.target.files[0])} className="form-control mb-2" />
-        <label>Galeri Görselleri:</label>
-        <input type="file" multiple onChange={e => setImages(e.target.files)} className="form-control mb-2" />
 
-        <button type="submit" className="btn btn-primary w-100">Kaydet</button>
+        <div className="mb-3">
+          <label>Kapak Fotoğrafı:</label><br />
+          {coverPreview && <img src={coverPreview} alt="Kapak" style={{ maxWidth: '100%', height: '150px', objectFit: 'cover' }} />}
+          <input type="file" name="coverPhoto" accept="image/*" onChange={handleCoverChange} className="form-control mt-2" />
+        </div>
+
+        <button type="submit" className="btn btn-success">Güncelle</button>
       </form>
     </div>
   );
