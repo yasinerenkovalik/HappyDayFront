@@ -20,18 +20,37 @@ export const organization = {
   getAll: () => axiosInstance.get('/Organization/OrganizationGetAll'),
   getWithImages: (id) =>
     axiosInstance.get(`/Organization/GetOrganizationWithImages?Id=${id}`),
+  addImage: (formData) =>
+    axiosInstance.post('/OrganizationImages/AddOrganizationImages', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    }),
+    getFiltered: (filters) =>
+      axiosInstance.get('/Organization/Filter', {
+        params: filters
+      }),
+
+  deleteImage: (imageId) => 
+    axiosInstance.delete(`/OrganizationImages/DeleteOrganizationImages/${imageId}`), // ✔️ düzeltildi
+
   add: (formData) =>
     axiosInstance.post('/Organization/AddOrganization', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     }),
-    edit: (formData) =>
-      axios.put(`${API_BASE_URL}/Organization/OrganizationUpdate`, formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      }),
-    getById: (id) => axiosInstance.get(`/Organization/OrganizationGetById?id=${id}`),
-  delete: (id) => axiosInstance.delete(`/Organization/DeleteOrganization/${id}`),
+  edit: (formData) =>
+    axiosInstance.put('/Organization/OrganizationUpdate', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    }),
+  getById: (id) =>
+    axiosInstance.get(`/Organization/OrganizationGetById?id=${id}`),
+  delete: (id) =>
+    axiosInstance.delete(`/Organization/DeleteOrganization/${id}`),
   getByCompanyId: (companyId) =>
     axiosInstance.get(`/Organization/GetOrganizationWithICompany?Id=${companyId}`),
+};
+
+export const cityApi = {
+  getCities: () => axiosInstance.get(`/City`),
+  getDistricts: (cityId) => axios.get(`/District/${cityId}`)
 };
 
 

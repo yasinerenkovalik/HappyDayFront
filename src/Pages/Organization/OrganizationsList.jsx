@@ -1,64 +1,95 @@
-// src/components/OrganizationList.jsx
 import React, { useEffect, useState } from 'react';
 import { organization } from '../../Api/api';
-import { data, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import './OrganizationList.css';
 import axios from 'axios';
 
 const OrganizationList = () => {
   const [organizations, setOrganizations] = useState([]);
-  const [filtered, setFiltered] = useState([]);
   const [categories, setCategories] = useState([]);
   const [selectedCat, setSelectedCat] = useState('');
+  const [isOutdoor, setIsOutdoor] = useState('');
+  const [maxPrice, setMaxPrice] = useState('');
+  const [selectedCity, setSelectedCity] = useState(''); // ✅ şehir filtresi
   const navigate = useNavigate();
 
-  useEffect(() => {
-    organization.getAll()
+  const fetchFilteredOrganizations = () => {
+    const filters = {
+      categoryId: selectedCat || undefined,
+      isOutdoor: isOutdoor !== '' ? isOutdoor : undefined,
+      maxPrice: maxPrice || undefined,
+      cityId: selectedCity || undefined, // ✅ şehir id ekle
+    };
+
+    organization.getFiltered(filters)
       .then(res => {
-        const data = res.data.data;
-        setOrganizations(data);
-        setFiltered(data);
+        setOrganizations(res.data.data || []);
       })
       .catch(console.error);
-      console.log(data);
+  };
 
+  useEffect(() => {
     axios.get("http://localhost:5268/api/Category/OrganizationGetAll")
       .then(res => setCategories(res.data.data || []))
       .catch(console.error);
-      
+
+    fetchFilteredOrganizations();
   }, []);
 
-  const handleFilterChange = (catId) => {
-    setSelectedCat(catId);
-    if (catId === '') {
-      setFiltered(organizations);
-    } else {
-      setFiltered(organizations.filter(org => org.categoryId === catId));
-    }
-  };
+  useEffect(() => {
+    fetchFilteredOrganizations();
+  }, [selectedCat, isOutdoor, maxPrice, selectedCity]); // ✅ cityId takibi
 
   return (
     <div className="container-fluid py-4">
       <div className="row">
         {/* Sol Filtre Paneli */}
         <div className="col-md-3 mb-4">
-          <h5 className="mb-3">Kategoriler</h5>
-          <ul className="list-group">
-            <li className={`list-group-item ${selectedCat === '' ? 'active' : ''}`}
-                onClick={() => handleFilterChange('')}>Tümü</li>
-            {categories.map(cat => (
-              <li key={cat.id}
-                  className={`list-group-item ${selectedCat === cat.id ? 'active' : ''}`}
-                  onClick={() => handleFilterChange(cat.id)}>
-                {cat.name}
-              </li>
-            ))}
-          </ul>
+          <h5 className="mb-3">Filtrele</h5>
+
+          <div className="mb-3">
+            <label className="form-label">Kategori</label>
+            <select className="form-select" value={selectedCat} onChange={e => setSelectedCat(e.target.value)}>
+              <option value="">Tümü</option>
+              {categories.map(cat => (
+                <option key={cat.id} value={cat.id}>{cat.name}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="mb-3">
+            <label className="form-label">Şehir</label>
+            <select className="form-select" value={selectedCity} onChange={e => setSelectedCity(e.target.value)}>
+              <option value="">Tümü</option>
+              <option value="1">Adana</option>
+              <option value="41">Kocaeli</option>
+            </select>
+          </div>
+
+          <div className="mb-3">
+            <label className="form-label">Açık Alan</label>
+            <select className="form-select" value={isOutdoor} onChange={e => setIsOutdoor(e.target.value)}>
+              <option value="">Tümü</option>
+              <option value="true">Evet</option>
+              <option value="false">Hayır</option>
+            </select>
+          </div>
+
+          <div className="mb-3">
+            <label className="form-label">Maksimum Fiyat</label>
+            <input
+              type="number"
+              className="form-control"
+              value={maxPrice}
+              placeholder="5000"
+              onChange={e => setMaxPrice(e.target.value)}
+            />
+          </div>
         </div>
 
         {/* Sağ Liste Görünümü */}
         <div className="col-md-9">
-          {filtered.map((org, index) => (
+          {organizations.map((org) => (
             <div key={org.id} className="card mb-3 shadow-sm">
               <div className="row g-0 align-items-center">
                 <div className="col-md-3">
@@ -92,7 +123,7 @@ const OrganizationList = () => {
             </div>
           ))}
 
-          {filtered.length === 0 && (
+          {organizations.length === 0 && (
             <div className="text-muted text-center">Filtreye uygun organizasyon bulunamadı.</div>
           )}
         </div>

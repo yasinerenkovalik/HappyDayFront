@@ -1,4 +1,3 @@
-// src/components/OrganizationDetail.jsx
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { organization as organizationApi } from '../../Api/api';
@@ -14,7 +13,9 @@ const OrganizationDetail = () => {
       .then(res => {
         if (res.data?.data) {
           setOrganization(res.data.data);
-          setSelectedImage(res.data.data.imageUrls?.[0]);
+          const firstImage = res.data.data.images?.[0];
+          setSelectedImage(firstImage?.imageUrl || null);
+          console.log('Organization data:', res.data.data);
         }
       })
       .catch(console.error);
@@ -37,13 +38,13 @@ const OrganizationDetail = () => {
           </div>
 
           <div className="d-flex gap-3 mt-3 flex-wrap">
-            {organization.imageUrls?.map((url, i) => (
+            {organization.images?.map((img, i) => (
               <img
-                key={i}
-                src={`http://localhost:5268${url}`}
+                key={img.id}
+                src={`http://localhost:5268${img.imageUrl}`}
                 alt={`Resim ${i + 1}`}
-                className={`rounded border shadow-sm ${selectedImage === url ? 'border-primary border-3' : 'border-light'}`}
-                onClick={() => setSelectedImage(url)}
+                className={`rounded border shadow-sm ${selectedImage === img.imageUrl ? 'border-primary border-3' : 'border-light'}`}
+                onClick={() => setSelectedImage(img.imageUrl)}
                 style={{ width: '80px', height: '80px', objectFit: 'cover', cursor: 'pointer' }}
               />
             ))}

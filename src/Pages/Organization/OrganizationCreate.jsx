@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getUserIdFromToken } from '../../Api/jwtdecode';
-import { organization } from '../../Api/api';
+import { organization, cityApi } from '../../Api/api';
 import axios from 'axios';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
@@ -11,7 +11,8 @@ const AddOrganization = () => {
     price: '',
     maxGuestCount: '',
     categoryId: '',
-    location: '',
+    cityId: '',
+    districtId: '',
     services: '',
     duration: '',
     isOutdoor: false,
@@ -22,6 +23,8 @@ const AddOrganization = () => {
 
   const [companyId, setCompanyId] = useState('');
   const [categories, setCategories] = useState([]);
+  const [cities, setCities] = useState([]);
+  const [districts, setDistricts] = useState([]);
   const [images, setImages] = useState([]);
   const [coverPhoto, setCoverPhoto] = useState(null);
 
@@ -31,16 +34,24 @@ const AddOrganization = () => {
   }, []);
 
   useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const res = await axios.get("http://localhost:5268/api/Category/OrganizationGetAll");
-        setCategories(res.data.data || []);
-      } catch (err) {
-        console.error("Kategori verisi alınamadı", err);
-      }
-    };
-    fetchCategories();
+    axios.get("http://localhost:5268/api/Category/OrganizationGetAll")
+      .then(res => setCategories(res.data.data || []))
+      .catch(console.error);
+
+    axios.get("http://localhost:5268/api/City")
+      .then(res => setCities(res.data.data || []))
+      .catch(console.error);
   }, []);
+
+  useEffect(() => {
+    if (formData.cityId) {
+      axios.get(`http://localhost:5268/api/District/${formData.cityId}`)
+        .then(res => setDistricts(res.data.data || []))
+        .catch(console.error);
+    } else {
+      setDistricts([]);
+    }
+  }, [formData.cityId]);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -60,7 +71,6 @@ const AddOrganization = () => {
     const data = new FormData();
     Object.entries(formData).forEach(([key, value]) => data.append(key, value));
     data.append("companyId", companyId);
-
     for (let i = 0; i < images.length; i++) {
       data.append("images", images[i]);
     }
@@ -111,14 +121,31 @@ const AddOrganization = () => {
             </select>
           </div>
 
-          <div className="mb-3">
-            <label className="form-label">Konum</label>
-            <input className="form-control" name="location" onChange={handleChange} />
+          {/* Şehir ve İlçe */}
+          <div className="row">
+            <div className="col-md-6 mb-3">
+              <label className="form-label">Şehir</label>
+              <select className="form-select" name="cityId" value={formData.cityId} onChange={handleChange}>
+                <option value="">Şehir Seçiniz</option>
+                {cities.map(city => (
+                  <option key={city.id} value={city.id}>{city.name}</option>
+                ))}
+              </select>
+            </div>
+            <div className="col-md-6 mb-3">
+              <label className="form-label">İlçe</label>
+              <select className="form-select" name="districtId" value={formData.districtId} onChange={handleChange}>
+                <option value="">İlçe Seçiniz</option>
+                {districts.map(d => (
+                  <option key={d.id} value={d.id}>{d.name}</option>
+                ))}
+              </select>
+            </div>
           </div>
 
           <div className="mb-3">
             <label className="form-label">Hizmetler</label>
-            <input className="form-control" name="services" onChange={handleChange} placeholder="Virgülle ayırınız (örn: DJ, Kamera, Yemek)" />
+            <input className="form-control" name="services" onChange={handleChange} placeholder="Virgülle ayırınız" />
           </div>
 
           <div className="mb-3">
@@ -142,7 +169,7 @@ const AddOrganization = () => {
           </div>
 
           <div className="mb-3">
-            <label className="form-label">Tanıtım Videosu (YouTube URL)</label>
+            <label className="form-label">Tanıtım Videosu</label>
             <input className="form-control" name="videoUrl" onChange={handleChange} />
           </div>
 
