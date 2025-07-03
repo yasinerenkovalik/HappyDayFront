@@ -7,10 +7,11 @@ import axios from 'axios';
 const OrganizationList = () => {
   const [organizations, setOrganizations] = useState([]);
   const [categories, setCategories] = useState([]);
+  const [cities, setCities] = useState([]); // 🔁 şehirler için state
   const [selectedCat, setSelectedCat] = useState('');
   const [isOutdoor, setIsOutdoor] = useState('');
   const [maxPrice, setMaxPrice] = useState('');
-  const [selectedCity, setSelectedCity] = useState(''); // ✅ şehir filtresi
+  const [selectedCity, setSelectedCity] = useState('');
   const navigate = useNavigate();
 
   const fetchFilteredOrganizations = () => {
@@ -18,7 +19,7 @@ const OrganizationList = () => {
       categoryId: selectedCat || undefined,
       isOutdoor: isOutdoor !== '' ? isOutdoor : undefined,
       maxPrice: maxPrice || undefined,
-      cityId: selectedCity || undefined, // ✅ şehir id ekle
+      cityId: selectedCity || undefined,
     };
 
     organization.getFiltered(filters)
@@ -29,8 +30,14 @@ const OrganizationList = () => {
   };
 
   useEffect(() => {
+    // Kategorileri getir
     axios.get("http://localhost:5268/api/Category/OrganizationGetAll")
       .then(res => setCategories(res.data.data || []))
+      .catch(console.error);
+
+    // 🔁 Şehirleri getir
+    axios.get("http://localhost:5268/api/City/CityGetAll")
+      .then(res => setCities(res.data.data || []))
       .catch(console.error);
 
     fetchFilteredOrganizations();
@@ -38,7 +45,7 @@ const OrganizationList = () => {
 
   useEffect(() => {
     fetchFilteredOrganizations();
-  }, [selectedCat, isOutdoor, maxPrice, selectedCity]); // ✅ cityId takibi
+  }, [selectedCat, isOutdoor, maxPrice, selectedCity]);
 
   return (
     <div className="container-fluid py-4">
@@ -61,8 +68,9 @@ const OrganizationList = () => {
             <label className="form-label">Şehir</label>
             <select className="form-select" value={selectedCity} onChange={e => setSelectedCity(e.target.value)}>
               <option value="">Tümü</option>
-              <option value="1">Adana</option>
-              <option value="41">Kocaeli</option>
+              {cities.map(city => (
+                <option key={city.id} value={city.id}>{city.cityName}</option>
+              ))}
             </select>
           </div>
 

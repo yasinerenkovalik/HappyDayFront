@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getUserIdFromToken } from '../../Api/jwtdecode';
-import { organization, cityApi } from '../../Api/api';
+import { organization } from '../../Api/api';
 import axios from 'axios';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
@@ -38,14 +38,17 @@ const AddOrganization = () => {
       .then(res => setCategories(res.data.data || []))
       .catch(console.error);
 
-    axios.get("http://localhost:5268/api/City")
+    axios.get("http://localhost:5268/api/City/CityGetAll")
       .then(res => setCities(res.data.data || []))
       .catch(console.error);
   }, []);
 
+  // 🔁 İl seçildiğinde ilçeleri çekmek için POST isteği:
   useEffect(() => {
     if (formData.cityId) {
-      axios.get(`http://localhost:5268/api/District/${formData.cityId}`)
+      axios.post("http://localhost:5268/api/District/GetAllDisctrictByCity", {
+        cityId: parseInt(formData.cityId)
+      })
         .then(res => setDistricts(res.data.data || []))
         .catch(console.error);
     } else {
@@ -90,6 +93,7 @@ const AddOrganization = () => {
       <div className="card shadow p-4">
         <h2 className="mb-4">Organizasyon Ekle</h2>
         <form onSubmit={handleSubmit} encType="multipart/form-data">
+          {/* Diğer form alanları */}
           <div className="mb-3">
             <label className="form-label">Başlık</label>
             <input className="form-control" name="title" onChange={handleChange} required />
@@ -100,6 +104,7 @@ const AddOrganization = () => {
             <textarea className="form-control" name="description" onChange={handleChange} required />
           </div>
 
+          {/* Fiyat, Katılımcı */}
           <div className="row">
             <div className="col-md-6 mb-3">
               <label className="form-label">Fiyat</label>
@@ -111,6 +116,7 @@ const AddOrganization = () => {
             </div>
           </div>
 
+          {/* Kategori */}
           <div className="mb-3">
             <label className="form-label">Kategori</label>
             <select className="form-select" name="categoryId" value={formData.categoryId} onChange={handleChange} required>
@@ -128,7 +134,7 @@ const AddOrganization = () => {
               <select className="form-select" name="cityId" value={formData.cityId} onChange={handleChange}>
                 <option value="">Şehir Seçiniz</option>
                 {cities.map(city => (
-                  <option key={city.id} value={city.id}>{city.name}</option>
+                  <option key={city.id} value={city.id}>{city.cityName}</option>
                 ))}
               </select>
             </div>
@@ -137,12 +143,13 @@ const AddOrganization = () => {
               <select className="form-select" name="districtId" value={formData.districtId} onChange={handleChange}>
                 <option value="">İlçe Seçiniz</option>
                 {districts.map(d => (
-                  <option key={d.id} value={d.id}>{d.name}</option>
+                  <option key={d.id} value={d.id}>{d.districtName}</option>
                 ))}
               </select>
             </div>
           </div>
 
+          {/* Diğer form alanları */}
           <div className="mb-3">
             <label className="form-label">Hizmetler</label>
             <input className="form-control" name="services" onChange={handleChange} placeholder="Virgülle ayırınız" />
