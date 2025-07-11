@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getUserIdFromToken } from '../../Api/jwtdecode';
-import { organization } from '../../Api/api';
+import { organization, categoryApi, cityApi } from '../../Api/api';
 import axios from 'axios';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
@@ -34,21 +34,18 @@ const AddOrganization = () => {
   }, []);
 
   useEffect(() => {
-    axios.get("http://localhost:5268/api/Category/OrganizationGetAll")
+    categoryApi.getAll()
       .then(res => setCategories(res.data.data || []))
       .catch(console.error);
 
-    axios.get("http://localhost:5268/api/City/CityGetAll")
+    cityApi.getCities()
       .then(res => setCities(res.data.data || []))
       .catch(console.error);
   }, []);
 
-  // 🔁 İl seçildiğinde ilçeleri çekmek için POST isteği:
   useEffect(() => {
     if (formData.cityId) {
-      axios.post("http://localhost:5268/api/District/GetAllDisctrictByCity", {
-        cityId: parseInt(formData.cityId)
-      })
+      cityApi.getDistricts(formData.cityId)
         .then(res => setDistricts(res.data.data || []))
         .catch(console.error);
     } else {

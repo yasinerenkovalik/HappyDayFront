@@ -12,8 +12,8 @@ import AddOrganization from '../Pages/Organization/OrganizationCreate';
 import OrganizationList from '../Pages/Organization/OrganizationsList';
 import OrganizationDetail from '../Pages/Organization/OrganizationDetail';
 import OrganizationEdit from '../Pages/Organization/OrganizationEdit';
-import AdminPanel from '../Pages/Admin/AdminPanel';
 import NotFound from '../Components/NotFound';
+import AdminApp from '../Admin/AdminApp';
 
 const ProtectedLayout = () => {
   return (
@@ -33,11 +33,12 @@ function AppRoutes() {
       <Route path="/loginuser" element={<LoginUser />} />
       <Route path="/logincompany" element={<LoginCompany />} />
       <Route path="/organizationlist" element={<OrganizationList />} />
-      <Route path="/organizationdetail/:id" element={<OrganizationDetail />} />
-      <Route path="/admin/*" element={<AdminPanel />} />
+      
 
       {/* Protected Routes */}
       <Route element={<PrivateRoute />}>
+      <Route path="/organizationdetail/:id" element={<OrganizationDetail />} />
+      <Route path="/admin/*" element={<AdminApp />} />
             
         <Route path="/userprofile" element={<Profile />} />
         <Route path="/organizationEdit/:id" element={<OrganizationEdit />} />

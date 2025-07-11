@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { organization } from '../../Api/api';
+import { organization, categoryApi, IMAGE_BASE_URL } from '../../Api/api';
 import { CiTrash } from "react-icons/ci";
-import axios from 'axios';
 
 const OrganizationEdit = () => {
   const { id } = useParams();
@@ -30,7 +29,7 @@ const OrganizationEdit = () => {
   // Kategorileri çek
   const fetchCategories = async () => {
     try {
-      const res = await axios.get("http://localhost:5268/api/Category/OrganizationGetAll");
+      const res = await categoryApi.getAll();
       setCategories(res.data.data || []);
     } catch (err) {
       console.error("Kategori verisi alınamadı", err);
@@ -63,7 +62,7 @@ const OrganizationEdit = () => {
         });
 
         if (org.coverPhotoPath) {
-          setCoverPreview(`http://localhost:5268${org.coverPhotoPath}`);
+          setCoverPreview(`${IMAGE_BASE_URL}${org.coverPhotoPath}`);
         }
 
         setOrganizationImages(org.images || []);

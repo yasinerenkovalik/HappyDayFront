@@ -1,6 +1,7 @@
 import axios from 'axios';
 
 const API_BASE_URL = 'http://localhost:5268/api';
+const IMAGE_BASE_URL = 'http://localhost:5268'; // <-- Bunu ekleyin
 
 const axiosInstance = axios.create({
   baseURL: API_BASE_URL,
@@ -28,6 +29,7 @@ export const organization = {
       axiosInstance.get('/Organization/Filter', {
         params: filters
       }),
+      getFeatured: () => axiosInstance.get(`/Organization/GetFeatured`),
 
   deleteImage: (imageId) => 
     axiosInstance.delete(`/OrganizationImages/DeleteOrganizationImages/${imageId}`), // ✔️ düzeltildi
@@ -48,9 +50,13 @@ export const organization = {
     axiosInstance.get(`/Organization/GetOrganizationWithICompany?Id=${companyId}`),
 };
 
+export const categoryApi = {
+  getAll: () => axiosInstance.get('/Category/OrganizationGetAll'),
+};
+
 export const cityApi = {
-  getCities: () => axiosInstance.get(`/City`),
-  getDistricts: (cityId) => axios.get(`/District/${cityId}`)
+  getCities: () => axiosInstance.get('/City/CityGetAll'),
+  getDistricts: (cityId) => axiosInstance.post('/District/GetAllDisctrictByCity', { cityId: parseInt(cityId) }),
 };
 
 
@@ -69,3 +75,4 @@ export const company = {
     }),
   getById: (id) => axiosInstance.post('/Company/getbyid', { id }),
 };
+export { IMAGE_BASE_URL };

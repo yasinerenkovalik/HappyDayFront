@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { organization as organizationApi } from '../../Api/api';
+import { IMAGE_BASE_URL } from '../../Api/api'; // <-- Bunu ekleyin
 import './OrganizationDetail.css';
 
 const OrganizationDetail = () => {
@@ -30,7 +31,7 @@ const OrganizationDetail = () => {
         <div className="col-lg-8">
           <div className="position-relative rounded overflow-hidden shadow">
             <img
-              src={`http://localhost:5268${selectedImage}`}
+              src={selectedImage ? `${IMAGE_BASE_URL}${selectedImage}` : ''}
               alt="Kapak Görseli"
               className="img-fluid w-100 rounded"
               style={{ maxHeight: '500px', objectFit: 'contain' }}
@@ -41,7 +42,7 @@ const OrganizationDetail = () => {
             {organization.images?.map((img, i) => (
               <img
                 key={img.id}
-                src={`http://localhost:5268${img.imageUrl}`}
+                src={`${IMAGE_BASE_URL}${img.imageUrl}`}
                 alt={`Resim ${i + 1}`}
                 className={`rounded border shadow-sm ${selectedImage === img.imageUrl ? 'border-primary border-3' : 'border-light'}`}
                 onClick={() => setSelectedImage(img.imageUrl)}

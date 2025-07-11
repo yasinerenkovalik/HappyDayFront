@@ -1,20 +1,33 @@
 import React, { useEffect, useState } from 'react';
-import { organization } from '../../Api/api';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { organization, categoryApi, cityApi, IMAGE_BASE_URL } from '../../Api/api';
 import './OrganizationList.css';
-import axios from 'axios';
 
 const OrganizationList = () => {
   const [organizations, setOrganizations] = useState([]);
   const [categories, setCategories] = useState([]);
-  const [cities, setCities] = useState([]); // 🔁 şehirler için state
+  const [cities, setCities] = useState([]);
   const [selectedCat, setSelectedCat] = useState('');
   const [isOutdoor, setIsOutdoor] = useState('');
   const [maxPrice, setMaxPrice] = useState('');
   const [selectedCity, setSelectedCity] = useState('');
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
-  const fetchFilteredOrganizations = () => {
+  useEffect(() => {
+    categoryApi.getAll()
+      .then(res => setCategories(res.data.data || []))
+      .catch(console.error);
+
+    cityApi.getCities()
+      .then(res => setCities(res.data.data || []))
+      .catch(console.error);
+
+    const initialCategory = searchParams.get('category') || '';
+    setSelectedCat(initialCategory);
+  }, []);
+
+  useEffect(() => {
     const filters = {
       categoryId: selectedCat || undefined,
       isOutdoor: isOutdoor !== '' ? isOutdoor : undefined,
@@ -27,30 +40,11 @@ const OrganizationList = () => {
         setOrganizations(res.data.data || []);
       })
       .catch(console.error);
-  };
-
-  useEffect(() => {
-    // Kategorileri getir
-    axios.get("http://localhost:5268/api/Category/OrganizationGetAll")
-      .then(res => setCategories(res.data.data || []))
-      .catch(console.error);
-
-    // 🔁 Şehirleri getir
-    axios.get("http://localhost:5268/api/City/CityGetAll")
-      .then(res => setCities(res.data.data || []))
-      .catch(console.error);
-
-    fetchFilteredOrganizations();
-  }, []);
-
-  useEffect(() => {
-    fetchFilteredOrganizations();
   }, [selectedCat, isOutdoor, maxPrice, selectedCity]);
 
   return (
     <div className="container-fluid py-4">
       <div className="row">
-        {/* Sol Filtre Paneli */}
         <div className="col-md-3 mb-4">
           <h5 className="mb-3">Filtrele</h5>
 
@@ -95,7 +89,6 @@ const OrganizationList = () => {
           </div>
         </div>
 
-        {/* Sağ Liste Görünümü */}
         <div className="col-md-9">
           {organizations.map((org) => (
             <div key={org.id} className="card mb-3 shadow-sm">
@@ -103,7 +96,7 @@ const OrganizationList = () => {
                 <div className="col-md-3">
                   {org.coverPhotoPath && (
                     <img
-                      src={`http://localhost:5268${org.coverPhotoPath}`}
+                      src={`${IMAGE_BASE_URL}${org.coverPhotoPath}`}
                       alt={org.title}
                       className="img-fluid rounded-start"
                       style={{ maxHeight: '180px', objectFit: 'cover' }}
